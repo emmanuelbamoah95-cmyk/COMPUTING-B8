@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Computing Multiple Choice Quiz</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #2c3e50;
+            background: linear-gradient(to right, #3498db, #2c3e50);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        h1 {
+            margin-bottom: 10px;
+            font-size: 2.2rem;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .instructions {
+            background-color: #e8f4f8;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            border-left: 5px solid #3498db;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .instructions h2 {
+            color: #2980b9;
+            margin-bottom: 10px;
+        }
+        
+        .instructions ul {
+            margin-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        
+        .student-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 5px solid #3498db;
+        }
+        
+        .student-info input {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        .student-info input:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+        
+        .quiz-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .quiz-info {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .score-display {
+            background: #2c3e50;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+        
+        .question-counter {
+            background: #3498db;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+        
+        .navigation-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn-prev {
+            background-color: #e67e22;
+        }
+        
+        .btn-next {
+            background-color: #27ae60;
+        }
+        
+        .btn-download {
+            background-color: #9b59b6;
+        }
+        
+        .btn-reset {
+            background-color: #e74c3c;
+        }
+        
+        .question-container {
+            margin-bottom: 30px;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid #3498db;
+        }
+        
+        .question-number {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        
+        .question-text {
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            line-height: 1.5;
+        }
+        
+        .options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+        
+        .option {
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .option:hover {
+            background-color: #f5f5f5;
+            border-color: #bdc3c7;
+        }
+        
+        .option.selected {
+            background-color: #d6eaf8;
+            border-color: #3498db;
+            font-weight: bold;
+        }
+        
+        .actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .completion-message {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(to right, #27ae60, #2ecc71);
+            color: white;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background: linear-gradient(to right, #3498db, #2c3e50);
+            width: 0%;
+            transition: width 0.5s;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="quiz-container">
+        <header>
+            <h1>Computing Multiple Choice Quiz</h1>
+            <p class="subtitle">Test your knowledge with these 40 multiple-choice questions</p>
+        </header>
+        
+        <section class="instructions">
+            <h2>📝 Instructions</h2>
+            <ul>
+                <li>Enter your name and class before starting</li>
+                <li>Select one answer for each question by clicking on the option</li>
+                <li>Use the Previous and Next buttons to navigate between questions</li>
+                <li>Your score will be calculated based on correct answers</li>
+                <li>Click "Download PDF" to save your results</li>
+            </ul>
+        </section>
+        
+        <div class="student-info">
+            <h3>Student Information</h3>
+            <input type="text" id="studentName" placeholder="Enter your full name">
+            <input type="text" id="studentClass" placeholder="Enter your class">
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress" id="progress"></div>
+        </div>
+        
+        <div class="quiz-controls">
+            <div class="quiz-info">
+                <div class="score-display">Score: <span id="score">0</span>/40</div>
+                <div class="question-counter">Question: <span id="current-question">1</span>/40</div>
+            </div>
+            <div class="navigation-buttons">
+                <button class="btn btn-prev" id="prev-btn">← Previous</button>
+                <button class="btn btn-next" id="next-btn">Next →</button>
+            </div>
+        </div>
+        
+        <div class="question-container" id="question-display">
+            <!-- Question content will be loaded here by JavaScript -->
+        </div>
+        
+        <div class="completion-message" id="completion-message">
+            <h2>🎉 Quiz Completed! 🎉</h2>
+            <p>You've answered all the questions. Your final score is <span id="final-score">0</span>/40.</p>
+            <p>Click "Download PDF" to save your results or "Reset Quiz" to try again.</p>
+        </div>
+        
+        <div class="actions">
+            <button class="btn btn-download" id="download-pdf">Download PDF</button>
+            <button class="btn btn-reset" id="reset-btn">Reset Quiz</button>
+        </div>
+        
+        <footer>
+            <p>Computing Multiple Choice Quiz | All rights reserved</p>
+        </footer>
+    </div>
+
+    <script>
+        // Quiz data - ALL 40 COMPUTING QUESTIONS
+        const quizData = [
+            {
+                question: "1. What is another name for a USB flash drive?",
+                options: ["A. External hard drive", "B. Optical disc drive", "C. Thumb drive", "D. Memory card"],
+                answer: 2
+            },
+            {
+                question: "2. Which type of storage device is significantly faster compared to traditional hard disk drives?",
+                options: ["A. Memory cards", "B. Solid state drives (SSDs)", "C. Optical disc drives", "D. Hybrid hard drives"],
+                answer: 1
+            },
+            {
+                question: "3. One problem associated with the use of AI software is:",
+                options: ["A. Enhanced decision-making capabilities", "B. Improved data accuracy", "C. Increased human productivity", "D. Job losses due to automation"],
+                answer: 3
+            },
+            {
+                question: "4. Why is file compression useful? It...",
+                options: ["A. Allows for faster file transfer over the internet", "B. Allows for better data organization on a PC", "C. Improves the speed and performance of a hard disk", "D. Allows multiple operating systems on one PC"],
+                answer: 0
+            },
+            {
+                question: "5. What is the main use of an Optical Character Reader (OCR)?",
+                options: ["A. Processing cheques in banking operations", "B. Digitizing printed books", "C. Reading passports and ID cards", "D. Marking objective/multiple-choice sheets"],
+                answer: 1
+            },
+            {
+                question: "6. What is the main use of an Optical Mark Reader (OMR)?",
+                options: ["A. Marking objective/multiple-choice sheets", "B. Processing cheques in banking operations", "C. Scanning and digitizing printed books", "D. Reading passports and ID cards"],
+                answer: 0
+            },
+            {
+                question: "7. What does file compression maintain while reducing file size?",
+                options: ["A. File encryption", "B. File metadata", "C. File integrity", "D. File permissions"],
+                answer: 2
+            },
+            {
+                question: "8. What does CMYK stand for in inkjet printers?",
+                options: ["A. Color, Magenta, Yellow, Key", "B. Cyan, Magenta, Yellow, Key", "C. Color, Magenta, Yellow, Black", "D. Cyan, Magenta, Yellow, Black"],
+                answer: 3
+            },
+            {
+                question: "9. What is the purpose of defragmentation? To...",
+                options: ["A. Divide a disk into multiple partitions", "B. Compress files and reduce their size", "C. Recover data from a damaged disk", "D. Improve the speed and performance of a hard disk"],
+                answer: 3
+            },
+            {
+                question: "10. Which type of printer creates tangible dots on paper for the visually impaired?",
+                options: ["A. Inkjet printer", "B. Braille printer", "C. Thermal printer", "D. Impact printer"],
+                answer: 1
+            },
+            {
+                question: "11. Which of the following is an advantage of Optical Mark Reader (OMR) over manual input?",
+                options: ["A. Can read handwritten text accurately", "B. Can input and read text", "C. Can process cheques quickly", "D. Faster and accurate"],
+                answer: 3
+            },
+            {
+                question: "12. Building and maintaining quantum computers is:",
+                options: ["A. Cost-effective", "B. Expensive", "C. Inexpensive", "D. Affordable for all organizations"],
+                answer: 1
+            },
+            {
+                question: "13. What is the main use of a Magnetic Ink Character Recognition (MICR) Reader?",
+                options: ["A. Processing cheques in banking operations", "B. Marking objective/multiple-choice sheets", "C. Reading passports and ID cards", "D. Digitizing printed books"],
+                answer: 0
+            },
+            {
+                question: "14. Quantum computers operate based on the principles of:",
+                options: ["A. Data processing and visualization", "B. Encryption and decryption", "C. Superposition and entanglement", "D. Automation and machine learning"],
+                answer: 2
+            },
+            {
+                question: "15. How can QR codes be scanned to access linked information or websites? By using...",
+                options: ["A. Visible red light", "B. Ultraviolet light", "C. A smartphone camera", "D. Infrared light"],
+                answer: 2
+            },
+            {
+                question: "16. What is NOT a characteristic of non-impact printers?",
+                options: ["A. They are page printers.", "B. They are less expensive.", "C. They are quiet in nature.", "D. They produce high-quality print."],
+                answer: 1
+            },
+            {
+                question: "17. Which of the following storage devices consists entirely of electronic components and contains no moving parts?",
+                options: ["A. Magnetic tape drive", "B. Optical disc drive (ODD)", "C. Solid state drive (SSD)", "D. Hard disk drive (HDD)"],
+                answer: 2
+            },
+            {
+                question: "18. What type of information can be stored in a QR code?",
+                options: ["A. Website address (URL)", "B. Plain text", "C. All of the above", "D. Contact details"],
+                answer: 2
+            },
+            {
+                question: "19. What is a hybrid hard drive? It is a storage device that...",
+                options: ["A. Combines CD drive and a DVD drive", "B. Combines the best features of a HDD and SSD", "C. Uses magnetic tape for data storage", "D. Only uses flash memory for data storage"],
+                answer: 1
+            },
+            {
+                question: "20. Entanglement in quantum computers involves the ability to...",
+                options: ["A. Separate qubits from each other", "B. Link two or more qubits together", "C. Exist in multiple states simultaneously", "D. Perform complex tasks"],
+                answer: 1
+            },
+            {
+                question: "21. Flawed predictions and decisions in AI software can occur if:",
+                options: ["A. The software is not personalized", "B. The data used for training is inaccurate", "C. The software lacks emotions", "D. The data processed is too large"],
+                answer: 1
+            },
+            {
+                question: "22. What is flash memory?",
+                options: ["A. Magnetic storage medium used in hard disk drives", "B. Non-volatile memory that can be erased electronically", "C. Optical storage medium used in CDs and DVDs", "D. Volatile memory that requires constant power supply"],
+                answer: 1
+            },
+            {
+                question: "23. Which keys on the QWERTY keyboard are used to control the direction of the cursor?",
+                options: ["A. Alphanumeric keys", "B. Function keys", "C. Cursor keys", "D. Numeric keypad"],
+                answer: 2
+            },
+            {
+                question: "24. One problem with quantum computers is:",
+                options: ["A. Difficulty in developing quantum algorithms and programming languages", "B. General-purpose problem-solving capabilities", "C. Insensitivity to noise", "D. Low cost of building and maintenance"],
+                answer: 0
+            },
+            {
+                question: "25. AI software boosts productivity by:",
+                options: ["A. Slowing down decision-making processes", "B. Increasing human workforce", "C. Automating repetitive tasks", "D. Reducing data processing capabilities"],
+                answer: 2
+            },
+            {
+                question: "26. What is the main purpose of the body of a mouse?",
+                options: ["A. Opening context menus", "B. Tracking movement", "C. Selecting items", "D. Serving as a palm rest"],
+                answer: 3
+            },
+            {
+                question: "27. Which section of the QWERTY keyboard is used for typing text in documents?",
+                options: ["A. Alphanumeric keys", "B. Cursor keys", "C. Numeric keypad", "D. Function keys"],
+                answer: 0
+            },
+            {
+                question: "28. What is an advantage of using a Magnetic Stripe Reader (MCR)?",
+                options: ["A. Can hold a large amount of data", "B. Works at a distance without contact", "C. Allows human-readable information on cards", "D. Prevents unauthorized access to secure areas"],
+                answer: 2
+            },
+            {
+                question: "29. What is a QR Code Generator?",
+                options: ["A. A software for decoding QR codes", "B. A device used to scan QR codes", "C. A device used to generate QR codes", "D. A web-based application for creating QR codes"],
+                answer: 3
+            },
+            {
+                question: "30. Which type of printer designs and builds three-dimensional models using an additive manufacturing process?",
+                options: ["A. 3D printer", "B. Inkjet printer", "C. Laser printer", "D. Dot matrix printer"],
+                answer: 0
+            },
+            {
+                question: "31. Which of the following is an example of a digital/virtual assistant?",
+                options: ["A. Excel", "B. Photoshop", "C. PowerPoint", "D. Siri"],
+                answer: 3
+            },
+            {
+                question: "32. What is one benefit of having multiple partitions on a hard drive?",
+                options: ["A. Increased storage capacity", "B. Improved data security", "C. Simultaneous running of multiple operating systems", "D. Faster file transfer speeds"],
+                answer: 2
+            },
+            {
+                question: "33. What is a mouse pad?",
+                options: ["A. A device used for capturing handwritten input on a computer screen", "B. A device used for scanning documents", "C. A device used for printing documents", "D. A flat surface on which a mouse is placed for smooth movement"],
+                answer: 3
+            },
+            {
+                question: "34. Quantum computers are very sensitive to noise, which can lead to:",
+                options: ["A. Improved calculations", "B. Faster processing speed", "C. Errors in calculations", "D. Lower cost of operation"],
+                answer: 2
+            },
+            {
+                question: "35. One challenge with quantum computers is that they can only solve specific problems because:",
+                options: ["A. They lack computing power", "B. They are limited by their architecture and design", "C. They are not efficient enough", "D. They are not compatible with existing software"],
+                answer: 1
+            },
+            {
+                question: "36. Digital virtual assistants utilize which technologies to perform tasks and respond to user queries?",
+                options: ["A. Augmented reality and virtual reality", "B. Robotics and automation", "C. Natural language processing and machine learning", "D. Quantum computing and data visualization"],
+                answer: 2
+            },
+            {
+                question: "37. What is a barcode?",
+                options: ["A. A device used to read information on product identification codes", "B. A device used to generate product identification codes", "C. A series of vertical lines representing product identification codes", "D. A series of horizontal lines representing product identification codes"],
+                answer: 2
+            },
+            {
+                question: "38. Superposition in quantum computers refers to:",
+                options: ["A. The ability of a qubit to exist in multiple states simultaneously", "B. The process of linking two or more qubits together", "C. The separation of qubits from each other", "D. The ability to perform complex tasks"],
+                answer: 0
+            },
+            {
+                question: "39. How many keys does the standard QWERTY keyboard have?",
+                options: ["A. 52", "B. 104", "C. 130", "D. 78"],
+                answer: 1
+            },
+            {
+                question: "40. What is the function of the scroll wheel on a mouse?",
+                options: ["A. Opening context menus", "B. Selecting items", "C. Moving the mouse pointer", "D. Moving the page of a window up and down"],
+                answer: 3
+            }
+        ];
+
+        // Quiz state
+        let currentQuestion = 0;
+        let userAnswers = Array(quizData.length).fill(null);
+        let score = 0;
+
+        // DOM elements
+        const questionDisplay = document.getElementById('question-display');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const currentQuestionSpan = document.getElementById('current-question');
+        const scoreSpan = document.getElementById('score');
+        const progressBar = document.getElementById('progress');
+        const completionMessage = document.getElementById('completion-message');
+        const finalScoreSpan = document.getElementById('final-score');
+        const downloadBtn = document.getElementById('download-pdf');
+        const resetBtn = document.getElementById('reset-btn');
+        const studentNameInput = document.getElementById('studentName');
+        const studentClassInput = document.getElementById('studentClass');
+
+        // Initialize the quiz
+        function initQuiz() {
+            loadQuestion(currentQuestion);
+            updateProgress();
+            updateNavigation();
+        }
+
+        // Load a question
+        function loadQuestion(index) {
+            const question = quizData[index];
+            currentQuestionSpan.textContent = index + 1;
+            
+            let optionsHTML = '';
+            question.options.forEach((option, i) => {
+                const isSelected = userAnswers[index] === i;
+                const optionClass = isSelected ? 'option selected' : 'option';
+                optionsHTML += `
+                    <div class="${optionClass}" data-index="${i}">
+                        ${option}
+                    </div>
+                `;
+            });
+            
+            questionDisplay.innerHTML = `
+                <div class="question-number">Question ${index + 1}</div>
+                <div class="question-text">${question.question}</div>
+                <div class="options">${optionsHTML}</div>
+            `;
+            
+            // Add event listeners to options
+            const options = questionDisplay.querySelectorAll('.option');
+            options.forEach(option => {
+                option.addEventListener('click', () => {
+                    const selectedIndex = parseInt(option.getAttribute('data-index'));
+                    userAnswers[index] = selectedIndex;
+                    
+                    // Update UI
+                    options.forEach(opt => opt.classList.remove('selected'));
+                    option.classList.add('selected');
+                    
+                    // Update score
+                    calculateScore();
+                    
+                    updateProgress();
+                });
+            });
+        }
+
+        // Calculate the current score
+        function calculateScore() {
+            score = 0;
+            userAnswers.forEach((answer, index) => {
+                if (answer !== null && answer === quizData[index].answer) {
+                    score++;
+                }
+            });
+            scoreSpan.textContent = score;
+        }
+
+        // Update progress bar
+        function updateProgress() {
+            const answeredCount = userAnswers.filter(answer => answer !== null).length;
+            const progressPercent = (answeredCount / quizData.length) * 100;
+            progressBar.style.width = `${progressPercent}%`;
+            
+            // Show completion message if all questions are answered
+            const allAnswered = userAnswers.every(answer => answer !== null);
+            if (allAnswered) {
+                completionMessage.style.display = 'block';
+                finalScoreSpan.textContent = score;
+            } else {
+                completionMessage.style.display = 'none';
+            }
+        }
+
+        // Update navigation buttons
+        function updateNavigation() {
+            prevBtn.disabled = currentQuestion === 0;
+            nextBtn.disabled = currentQuestion === quizData.length - 1;
+        }
+
+        // Event listeners for navigation
+        prevBtn.addEventListener('click', () => {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                loadQuestion(currentQuestion);
+                updateNavigation();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentQuestion < quizData.length - 1) {
+                currentQuestion++;
+                loadQuestion(currentQuestion);
+                updateNavigation();
+            }
+        });
+
+        // Reset quiz
+        resetBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to reset the quiz? All your answers will be lost.')) {
+                currentQuestion = 0;
+                userAnswers = Array(quizData.length).fill(null);
+                score = 0;
+                scoreSpan.textContent = score;
+                studentNameInput.value = '';
+                studentClassInput.value = '';
+                initQuiz();
+            }
+        });
+
+        // Download PDF
+        downloadBtn.addEventListener('click', () => {
+            const studentName = studentNameInput.value || 'Not provided';
+            const studentClass = studentClassInput.value || 'Not provided';
+            
+            if (!studentNameInput.value || !studentClassInput.value) {
+                alert('Please enter your name and class before downloading.');
+                return;
+            }
+            
+            const element = document.getElementById('quiz-container');
+            const opt = {
+                margin: 10,
+                filename: `Computing_Quiz_${studentName}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            
+            html2pdf().set(opt).from(element).save();
+        });
+
+        // Initialize the quiz when the page loads
+        window.addEventListener('DOMContentLoaded', initQuiz);
+    </script>
+</body>
+</html>
